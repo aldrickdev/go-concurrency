@@ -8,6 +8,8 @@ import (
 
 func main() {
 	go boring("Boring!!!")
+	// The program will finish immediately as once the
+	//   go routine is launched, main finishes
 }
 
 // Non-concurrent function
