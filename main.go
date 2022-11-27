@@ -7,15 +7,17 @@ import (
 )
 
 func main() {
-	// Provides a channel of type string
-	c := boring("Boring!")
+	// Launch 2 services with different names
+	joe := boring("Joe")
+	ann := boring("Ann")
 
-	// Pull from the channel 5 times
+	// Pull from the channels 5 times
 	for i := 0; i < 5; i++ {
-		fmt.Printf("You say: %q\n", <-c)
+		fmt.Println(<-joe)
+		fmt.Println(<-ann)
 	}
 
-	fmt.Println("You're boring, peace")
+	fmt.Println("You're both boring, peace")
 }
 
 // Returns a READ ONLY channel
