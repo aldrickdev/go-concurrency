@@ -8,11 +8,12 @@ import (
 
 func main() {
 	go boring("Boring!!!")
-	// The program will finish immediately as once the
-	//   go routine is launched, main finishes
+
+	fmt.Println("I'm listening.")
+	time.Sleep(2 * time.Second)
+	fmt.Println("You're boring, peace.")
 }
 
-// Non-concurrent function
 func boring(msg string) {
 	for i := 0; ; i++ {
 		fmt.Println(msg, i)
