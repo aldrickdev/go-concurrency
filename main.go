@@ -2,37 +2,47 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"time"
 )
 
-func pass(left, right chan int) {
-	left <- 1 + <-right
+// Define the different searches
+var (
+	Web   = fakeSearch("web")
+	Image = fakeSearch("image")
+	Video = fakeSearch("video")
+)
+
+// Define some types
+type Result string
+type Search func(query string) Result
+
+// Create a closure for the search functions
+func fakeSearch(kind string) Search {
+	return func(query string) Result {
+		time.Sleep(time.Duration(rand.Intn(100)) * time.Millisecond)
+		return Result(fmt.Sprintf("%s result for %q\n", kind, query))
+	}
+}
+
+// Returns the results of all of the searches
+func Google(query string) []Result {
+	var results []Result
+
+	results = append(results, Web(query))
+	results = append(results, Image(query))
+	results = append(results, Video(query))
+
+	return results
 }
 
 func main() {
-	// The amount of go routines and channels to link together
-	const n = 100000
-
-	// Initial channel setup
-	leftmost := make(chan int)
-	right := leftmost
-	left := leftmost
-
-	for i := 0; i < n; i++ {
-		// Creates a new channel
-		right = make(chan int)
-
-		// Links the left channel and the newly created on
-		go pass(left, right)
-
-		// makes the left channel equal to the new channel
-		left = right
-	}
+	rand.Seed(time.Now().UnixNano())
 
 	start := time.Now()
-	// Sends a value into the right most channel
-	go func(c chan int) { c <- 0 }(right)
+	results := Google("golang")
 
-	// Wait for it to come out on the other side
-	fmt.Printf("Took %v to run %v go routines\n", time.Since(start), <-leftmost)
+	elapsed := time.Since(start)
+	fmt.Println(results)
+	fmt.Println(elapsed)
 }
