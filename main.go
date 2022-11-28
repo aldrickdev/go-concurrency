@@ -56,11 +56,28 @@ func Google(query string) []Result {
 	return results
 }
 
+// Returns the first value that the replicas find
+func FirstResult(query string, replicas ...Search) Result {
+	c := make(chan Result)
+
+	// Creates an inline function that will run the search query
+	// and puts the result in the channel
+	searchReplica := func(i int) { c <- replicas[i](query) }
+
+	// Runs each of the replicas in a go routine
+	for i := range replicas {
+		go searchReplica(i)
+	}
+
+	// returns the fist value that comes back
+	return <-c
+}
+
 func main() {
 	rand.Seed(time.Now().UnixNano())
 
 	start := time.Now()
-	results := Google("golang")
+	results := FirstResult("golang", fakeSearch("replica 1"), fakeSearch("replica 2"))
 	elapsed := time.Since(start)
 
 	fmt.Println(results)
