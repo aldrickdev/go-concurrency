@@ -2,45 +2,37 @@ package main
 
 import (
 	"fmt"
-	"math/rand"
 	"time"
 )
 
-func main() {
-	// Make a channel that will signal the communication to stop
-	quit := make(chan bool)
-
-	// Service tha takes in a quit channel
-	c := boring("Joe", quit)
-
-	for i := 0; i < 5; i++ {
-		fmt.Println(<-c)
-	}
-
-	fmt.Println("I'm done")
-
-	// Send a signal into the quit channel signaling the service to stop
-	quit <- true
+func pass(left, right chan int) {
+	left <- 1 + <-right
 }
 
-// Returns a READ ONLY channel
-func boring(msg string, stop <-chan bool) <-chan string {
-	rand.Seed(time.Now().UnixNano())
-	c := make(chan string)
+func main() {
+	// The amount of go routines and channels to link together
+	const n = 100000
 
-	go func() {
-		for i := 0; ; i++ {
-			time.Sleep(time.Duration(rand.Intn(2e3)) * time.Millisecond)
+	// Initial channel setup
+	leftmost := make(chan int)
+	right := leftmost
+	left := leftmost
 
-			select {
-			case c <- fmt.Sprintf("%s: %d", msg, i):
-				// Nothing
+	for i := 0; i < n; i++ {
+		// Creates a new channel
+		right = make(chan int)
 
-			case <-stop:
-				// Stops the service
-				return
-			}
-		}
-	}()
-	return c
+		// Links the left channel and the newly created on
+		go pass(left, right)
+
+		// makes the left channel equal to the new channel
+		left = right
+	}
+
+	start := time.Now()
+	// Sends a value into the right most channel
+	go func(c chan int) { c <- 0 }(right)
+
+	// Wait for it to come out on the other side
+	fmt.Printf("Took %v to run %v go routines\n", time.Since(start), <-leftmost)
 }
