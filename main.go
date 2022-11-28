@@ -20,18 +20,27 @@ type Search func(query string) Result
 // Create a closure for the search functions
 func fakeSearch(kind string) Search {
 	return func(query string) Result {
-		time.Sleep(time.Duration(rand.Intn(100)) * time.Millisecond)
-		return Result(fmt.Sprintf("%s result for %q\n", kind, query))
+		duration := time.Duration(rand.Intn(100)) * time.Millisecond
+		time.Sleep(duration)
+		return Result(fmt.Sprintf("%s result for %q in %v\n", kind, query, duration))
 	}
 }
 
 // Returns the results of all of the searches
 func Google(query string) []Result {
 	var results []Result
+	c := make(chan Result)
 
-	results = append(results, Web(query))
-	results = append(results, Image(query))
-	results = append(results, Video(query))
+	// Runs all the searches in seperate go routines
+	// and fans the results into 1 channel
+	go func() { c <- Web(query) }()
+	go func() { c <- Image(query) }()
+	go func() { c <- Video(query) }()
+
+	// Wait for the results to come from the channel
+	for i := 0; i < 3; i++ {
+		results = append(results, <-c)
+	}
 
 	return results
 }
