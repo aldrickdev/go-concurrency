@@ -8,16 +8,17 @@ import (
 
 func main() {
 	c := boring("Joe")
+	timeout := time.After(5 * time.Second)
 
 	for {
 		select {
 		case s := <-c:
 			fmt.Println(s)
 
-		// Creates a channel that will return a value when the time has elapsed
-		// Note that this timer will restart after every loop
-		case <-time.After(1 * time.Second):
-			fmt.Println("You're too slow")
+		// Will timeout after 5 seconds no matter
+		// how many times the loop happens
+		case <-timeout:
+			fmt.Println("You talk to much")
 			return
 		}
 	}
