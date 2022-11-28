@@ -37,9 +37,20 @@ func Google(query string) []Result {
 	go func() { c <- Image(query) }()
 	go func() { c <- Video(query) }()
 
-	// Wait for the results to come from the channel
+	// Sets up the timeout
+	timeout := time.After(80 * time.Millisecond)
+
+	// Wait for the 3 results to come back but if the total elapsed time
+	// is over the set timeout quit the search and return anyways
 	for i := 0; i < 3; i++ {
-		results = append(results, <-c)
+		select {
+		case r := <-c:
+			results = append(results, r)
+
+		case <-timeout:
+			fmt.Println("Timed Out")
+			return results
+		}
 	}
 
 	return results
@@ -50,8 +61,8 @@ func main() {
 
 	start := time.Now()
 	results := Google("golang")
-
 	elapsed := time.Since(start)
+
 	fmt.Println(results)
 	fmt.Println(elapsed)
 }
