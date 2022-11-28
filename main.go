@@ -8,9 +8,14 @@ import (
 
 // Define the different searches
 var (
-	Web   = fakeSearch("web")
-	Image = fakeSearch("image")
-	Video = fakeSearch("video")
+	Web1 = fakeSearch("web1")
+	Web2 = fakeSearch("web2")
+
+	Image1 = fakeSearch("image1")
+	Image2 = fakeSearch("image2")
+
+	Video1 = fakeSearch("video1")
+	Video2 = fakeSearch("video2")
 )
 
 // Define some types
@@ -31,11 +36,11 @@ func Google(query string) []Result {
 	var results []Result
 	c := make(chan Result)
 
-	// Runs all the searches in seperate go routines
+	// Runs all the replicated searches in seperate go routines
 	// and fans the results into 1 channel
-	go func() { c <- Web(query) }()
-	go func() { c <- Image(query) }()
-	go func() { c <- Video(query) }()
+	go func() { c <- FirstResult(query, Web1, Web2) }()
+	go func() { c <- FirstResult(query, Image1, Image2) }()
+	go func() { c <- FirstResult(query, Video1, Video2) }()
 
 	// Sets up the timeout
 	timeout := time.After(80 * time.Millisecond)
@@ -77,7 +82,7 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 
 	start := time.Now()
-	results := FirstResult("golang", fakeSearch("replica 1"), fakeSearch("replica 2"))
+	results := Google("golang")
 	elapsed := time.Since(start)
 
 	fmt.Println(results)
