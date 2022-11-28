@@ -7,33 +7,39 @@ import (
 )
 
 func main() {
-	c := boring("Joe")
-	timeout := time.After(5 * time.Second)
+	// Make a channel that will signal the communication to stop
+	quit := make(chan bool)
 
-	for {
-		select {
-		case s := <-c:
-			fmt.Println(s)
+	// Service tha takes in a quit channel
+	c := boring("Joe", quit)
 
-		// Will timeout after 5 seconds no matter
-		// how many times the loop happens
-		case <-timeout:
-			fmt.Println("You talk to much")
-			return
-		}
+	for i := 0; i < 5; i++ {
+		fmt.Println(<-c)
 	}
+
+	fmt.Println("I'm done")
+
+	// Send a signal into the quit channel signaling the service to stop
+	quit <- true
 }
 
 // Returns a READ ONLY channel
-func boring(msg string) <-chan string {
+func boring(msg string, stop <-chan bool) <-chan string {
 	rand.Seed(time.Now().UnixNano())
 	c := make(chan string)
 
 	go func() {
-		for {
-			t := time.Duration(rand.Intn(2e3))
-			c <- fmt.Sprintf("%s\t%v", msg, t)
-			time.Sleep(t * time.Millisecond)
+		for i := 0; ; i++ {
+			time.Sleep(time.Duration(rand.Intn(2e3)) * time.Millisecond)
+
+			select {
+			case c <- fmt.Sprintf("%s: %d", msg, i):
+				// Nothing
+
+			case <-stop:
+				// Stops the service
+				return
+			}
 		}
 	}()
 	return c
