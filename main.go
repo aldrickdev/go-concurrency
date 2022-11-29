@@ -8,7 +8,7 @@ import (
 
 func main() {
 	// Make a channel that will signal the communication to stop
-	quit := make(chan bool)
+	quit := make(chan string)
 
 	// Service tha takes in a quit channel
 	c := boring("Joe", quit)
@@ -17,14 +17,20 @@ func main() {
 		fmt.Println(<-c)
 	}
 
-	fmt.Println("I'm done")
-
 	// Send a signal into the quit channel signaling the service to stop
-	quit <- true
+	quit <- "Please stop talking!!"
+
+	// Wait for the service to finish cleaning up
+	fmt.Printf("%v\n", <-quit)
+}
+
+func cleanUp() {
+	time.Sleep(time.Duration(rand.Intn(2e3)) * time.Millisecond)
+	fmt.Println("Done cleaning")
 }
 
 // Returns a READ ONLY channel
-func boring(msg string, stop <-chan bool) <-chan string {
+func boring(msg string, stop chan string) <-chan string {
 	rand.Seed(time.Now().UnixNano())
 	c := make(chan string)
 
@@ -37,6 +43,9 @@ func boring(msg string, stop <-chan bool) <-chan string {
 				// Nothing
 
 			case <-stop:
+				// Clean things up before stopping service
+				cleanUp()
+				stop <- "Ok, I'm finished now"
 				// Stops the service
 				return
 			}
