@@ -41,6 +41,20 @@ In this section we add to the quit channel by allowing the service to run some c
 - [Daisy Chaining](https://github.com/aldrickdev/go-concurrency/blob/7.Daisy-chain/main.go)  
 Here we show a simple example of how you can daisy chain together channels and run thousands of go routines to pass data from one end of a chain to the other in seconds. This showcases how lightweight the go rountines are.
 
-- []()
+- [Google Search](https://github.com/aldrickdev/go-concurrency/blob/8.Google-Search/main.go)  
+In this section we start to build out a simplified idea of a search engine where from a single query multiple searches are made, one for web content another for video and then images and then we print out how long the search for all 3 results took.
+
+- [Google Search Concurrently](https://github.com/aldrickdev/go-concurrency/blob/8.1.Google-Search-Concurrent/main.go)  
+Here we apply the Fan In approach where we start up all 3 searches in separate go routines and receive the individual results in a channel.
+
+- [Google Search with Timeout](https://github.com/aldrickdev/go-concurrency/blob/8.2.Google-Search-with-timeout/main.go)  
+Here we use the Select plus Timeout pattern to timeout and return only the results that too less than 80 milliseconds. This would mena that we can guarantee that you will get a response back within 80 milliseconds, however it might not have results from all three services.
+
+- [Google Search with Replicated Services](https://github.com/aldrickdev/go-concurrency/blob/8.3.Replicas/main.go)  
+Here we explore starting multiple of each service to try and get the quickest response possible.
+
+- [Putting it all together](https://github.com/aldrickdev/go-concurrency/blob/9.Putting-it-all-together/main.go)  
+In this section, we put together all of the previous concepts to increase the chances of getting results from all 3 services within 80 milliseconds.
+
 
 
